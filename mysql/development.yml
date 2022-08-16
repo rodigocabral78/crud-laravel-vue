@@ -1,0 +1,83 @@
+---
+version: "3.8"
+
+services:
+  mysql:
+    build:
+      context: "./"
+      dockerfile: ".docker/development.dockerfile"
+    image: "mysql:latest"
+    restart: always
+    volumes:
+      - "./initial_data:/docker-entrypoint-initdb.d"
+      - "dbdata:/var/lib/mysql:rw"
+      - "/tmp:/tmp:rw"
+    ports:
+      - "3306:3306"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    network_mode: bridge
+
+    env_file:
+      - ".env"
+    environment:
+      docker: "true"
+
+    cpu_shares: 128
+    mem_reservation: 128m
+    mem_limit: 256m
+    memswap_limit: -1
+    privileged: true
+    container_name: mysql
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - "33080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    #   # - "local.test:192.168.0.143"
+    #   local.test: "192.168.0.145"
+    network_mode: bridge
+    depends_on: ["mysql"]
+    links: ["mysql"]
+
+    environment:
+      # ADMINER_DEFAULT_SERVER: mysql
+      ADMINER_DEFAULT_SERVER: local.test
+      # ADMINER_DESIGN: nette
+      # ADMINER_DESIGN: brade
+      ADMINER_DESIGN: mvt
+      # ADMINER_DESIGN: rmsoft_blue
+      # ADMINER_DESIGN: mancave
+      # ADMINER_DESIGN: galkaev
+      # ADMINER_DESIGN: hydra
+      # ADMINER_DESIGN: arcs-material
+      # ADMINER_DESIGN: price
+      # ADMINER_DESIGN: flat
+      # ADMINER_DESIGN: haeckel
+      # ADMINER_DESIGN: pokorny
+      # ADMINER_DESIGN: paranoiq
+      # ADMINER_DESIGN: bueltge
+      # ADMINER_DESIGN: esterka
+      # ADMINER_DESIGN: kahi2
+
+    ### ToDo: Change to your public DNS name
+      # LETSENCRYPT_EMAIL: "admin@local.test"
+      LETSENCRYPT_HOST: "adminer.os.com.br"
+      # VIRTUAL_PROTO: "https"
+      HTTPS_METHOD: "noredirect"
+      VIRTUAL_HOST: "adminer.local.test"
+      VIRTUAL_PORT: 8080
+
+    cpu_shares: 128
+    mem_reservation: 128m
+    mem_limit: 256m
+    memswap_limit: -1
+    privileged: true
+    container_name: adminer
+
+volumes:
+  dbdata:
+    name: mysql_dbdata
